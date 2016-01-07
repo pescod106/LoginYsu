@@ -3,7 +3,9 @@ package com.pescod.loginysu.db;
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
+import android.database.sqlite.SQLiteConstraintException;
 import android.database.sqlite.SQLiteDatabase;
+import android.util.Log;
 
 import com.pescod.loginysu.model.AccountInfo;
 
@@ -39,8 +41,8 @@ public class AccountManageDB {
             ContentValues values = new ContentValues();
             values.put("account",accountInfo.getStrAccount());
             values.put("password",accountInfo.getStrPassword());
-            values.put("isTest",0);
-            values.put("isAvailable",0);
+            values.put("isTest",accountInfo.isTest());
+            values.put("isAvailable", accountInfo.isAvailable());
             db.insert("AccountTable",null,values);
         }
     }

@@ -1,12 +1,12 @@
 package com.pescod.loginysu.activity;
 
-import android.app.PendingIntent;
+import android.app.ProgressDialog;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
-import android.support.annotation.NonNull;
 import android.text.Editable;
+import android.text.TextUtils;
 import android.text.TextWatcher;
 import android.util.Log;
 import android.view.View;
@@ -14,16 +14,15 @@ import android.view.Window;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
+import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import com.pescod.loginysu.R;
 import com.pescod.loginysu.utils.HttpCallbackListener;
 import com.pescod.loginysu.utils.HttpUtil;
 
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
 
 public class MainActivity extends BaseActivity {
 
@@ -37,6 +36,7 @@ public class MainActivity extends BaseActivity {
 
     private SharedPreferences preferences;
     private SharedPreferences.Editor editor;
+    private ProgressDialog progressDialog;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -107,7 +107,7 @@ public class MainActivity extends BaseActivity {
         }
     }
 
-    public void btn_login(View view){
+    public void btn_login(View view)    {
         final String account = accountEdit.getText().toString();
         final String password = passwordEdit.getText().toString();
         final String address = "http://202.206.240.243/";
@@ -115,22 +115,27 @@ public class MainActivity extends BaseActivity {
         Map<String,String> params = new HashMap<String,String>();
         params.put("DDDDD",account);
         params.put("upass", password);
-        params.put("0MKKey","");
+        params.put("0MKKey", "");
+        showProgressDialog();
         HttpUtil.sendLoginHttpRequest(params, "utf-8", address, new HttpCallbackListener() {
             @Override
             public void onFinish(String response) {
-                if ("OK".equals(response)){
+                closeProgressDialog();
+                if (!TextUtils.isEmpty(response)) {
                     if (rememberPass.isChecked()) {
-                        writeAccInfoToPref(true,account,password);
+                        writeAccInfoToPref(true, account, password);
                     } else {
-                        writeAccInfoToPref(false,account,"");
+                        writeAccInfoToPref(false, account, "");
                     }
 
                     Intent intent = new Intent(MainActivity.this, AccountInfoActivity.class);
+                    intent.putExtra("account", account);
+                    intent.putExtra("password", password);
                     startActivity(intent);
                     finish();
                 }
             }
+
             @Override
             public void onError(Exception e) {
                 Log.d("MainActivity", "ldap auth error");
@@ -155,5 +160,26 @@ public class MainActivity extends BaseActivity {
         editor.putString("account", account);
         editor.putString("password", passwd);
         editor.commit();
+    }
+
+    /**
+     * 显示进度条
+     */
+    private void showProgressDialog(){
+        if (progressDialog==null){
+            progressDialog = new ProgressDialog(this);
+            progressDialog.setMessage("Loading...");
+            progressDialog.setCanceledOnTouchOutside(false);
+        }
+        progressDialog.show();
+    }
+
+    /**
+     * 关闭进度条
+     */
+    private void closeProgressDialog(){
+        if (progressDialog!=null){
+            progressDialog.dismiss();
+        }
     }
 }

@@ -10,9 +10,8 @@ import android.database.sqlite.SQLiteOpenHelper;
 public class LoginYsuOpenHelper extends SQLiteOpenHelper {
 
     public static final String CREATE_ACCOUNT = "CREATE TABLE AccountTable(" +
-            "id integer primary key autoincrement," +
-            "account character(12)," +
-            "password varchar()," +
+            "account character(12) primary key," +
+            "password varchar(20)," +
             "isTest boolean default 0," +
             "isAvailable boolean default 0)";
 

@@ -7,5 +7,5 @@ import java.io.InputStream;
  */
 public interface HttpCallbackListener {
     void onFinish(String response);
-    void onError(Exception e);
+    void onError(String e);
 }

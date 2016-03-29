@@ -81,4 +81,13 @@ public class AccountManageDB {
         String update = "UPDATE AccountTable SET isTest = 1 WHERE account = "+account;
         db.execSQL(update);
     }
+
+    /**
+     * 修改账号的可用状态
+     * @param account
+     */
+    public void changeAvailableState(String account){
+        String update = "UPDATE AccountTable SET isAvailable = 1 WHERE account = "+account;
+        db.execSQL(update);
+    }
 }

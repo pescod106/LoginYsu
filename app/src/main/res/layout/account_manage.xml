@@ -17,6 +17,7 @@
             android:layout_marginLeft="10dp"
             android:background="@drawable/back"/>
         <Button
+            android:onClick="add_account_onClick"
             android:id="@+id/add_account"
             android:layout_width="35dp"
             android:layout_height="35dp"
@@ -26,6 +27,7 @@
             android:layout_marginRight="60dp"
             android:background="@drawable/add"/>
         <Button
+            android:onClick="edit_onClick"
             android:id="@+id/edit_account"
             android:layout_width="35dp"
             android:layout_height="35dp"
@@ -40,6 +42,7 @@
         android:layout_weight="1"
         android:layout_height="0dp">
         <ListView
+            android:id="@+id/account_list"
             android:layout_width="match_parent"
             android:layout_height="match_parent">
             
@@ -57,6 +60,14 @@
             android:textSize="20sp"
             android:layout_marginTop="4dp"
             android:layout_marginLeft="10dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+        <Button
+            android:onClick="test_all_account_onClick"
+            android:background="#1111"
+            android:textSize="20sp"
+            android:layout_centerInParent="true"
+            android:text="测试所有账号"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content" />
         <Button

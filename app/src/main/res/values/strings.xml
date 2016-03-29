@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">LoginYsu</string>
+    <string name="btn_normal">#000</string>
+    <string name="btn_pressed">#fff</string>
 </resources>

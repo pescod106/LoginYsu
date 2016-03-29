@@ -69,7 +69,7 @@ public class AccountInfoActivity extends BaseActivity {
             }
 
             @Override
-            public void onError(Exception e) {
+            public void onError(String e) {
 
             }
         });
@@ -95,7 +95,7 @@ public class AccountInfoActivity extends BaseActivity {
             }
 
             @Override
-            public void onError(Exception e) {
+            public void onError(String e) {
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {

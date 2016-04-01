@@ -41,19 +41,8 @@ public class HttpUtil{
 //                        connection.setDoInput(true);
                         // Post 请求不能使用缓存
                         connection.setUseCaches(false);
-//                        connection.setRequestProperty("Accept","text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8");
-//                        connection.setRequestProperty("Accept-Encoding","gzip, deflate");
-//                        connection.setRequestProperty("Accept-Language","zh-CN,zh;q=0.8,en-US;q=0.6,en;q=0.4");
-//                        connection.setRequestProperty("Cache-Control","max-age=0");
-//                        connection.setRequestProperty("Connection", "keep-alive");
-//                        connection.setRequestProperty("Content-Length","39");
-//                        connection.setRequestProperty("Content-Type","application/x-www-form-urlencoded");
                         connection.setRequestProperty("Host", "202.206.240.243");
-//                        connection.setRequestProperty("Origin","http://202.206.240.243");
                         connection.setRequestProperty("Referer", "http://202.206.240.243/");
-//                        connection.setRequestProperty("Upgrade-Insecure-Requests", "1");
-//                        connection.setRequestProperty("User-Agent", "Mozilla/5.0 (Windows NT 6.1; WOW64) " +
-//                                "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/49.0.2623.108 Safari/537.36");
 
                         connection.setConnectTimeout(5000);
                         connection.setReadTimeout(5000);
@@ -73,6 +62,7 @@ public class HttpUtil{
                             if (result.contains("您已经成功登录。")&&listener!=null){
                                 listener.onFinish("OK");
                                 Log.d("httpUtul","-----请求成功-----");
+                                Log.d("HttpUtil",params.get("DDDDD"));
                             }else{
                                 listener.onError("");
                             }
@@ -95,49 +85,6 @@ public class HttpUtil{
         }
     }
 
-    public static void sendLoginHttpIsSuccessed(final String address,final HttpCallbackListener listener){
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                HttpURLConnection connection = null;
-                try{
-                    URL url = new URL(address);
-                    connection = (HttpURLConnection)url.openConnection();
-                    connection.setRequestMethod("GET");
-                    connection.setRequestProperty("Accept", "text/html,application/xhtml+xml," +
-                            "application/xml;q=0.9,image/webp,*/*;q=0.8");
-                    connection.setRequestProperty("Accept-Encoding","gzip, deflate, sdch");
-                    connection.setRequestProperty("Accept-Language","zh-CN,zh;q=0.8,en-US;q=0.6,en;q=0.4");
-                    connection.setRequestProperty("Cache-Control","max-age=0");
-                    connection.setRequestProperty("Connection","keep-alive");
-                    connection.setRequestProperty("Host","202.206.240.243:9002");
-                    connection.setRequestProperty("Upgrade-Insecure-Requests","1");
-                    connection.setRequestProperty("User-Agent","Mozilla/5.0 (Windows NT 6.1; WOW64) " +
-                            "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/49.0.2623.87 Safari/537.36");
-                    connection.setDoInput(true);
-                    connection.setConnectTimeout(5000);
-                    connection.setReadTimeout(5000);
-                    int result = connection.getResponseCode();
-                    if ((result==200)){
-                        if (listener!=null){
-                            listener.onFinish("login successed!");
-                        }
-                    }else{
-                        Toast.makeText(MyApplication.getContext(),"request error",Toast.LENGTH_SHORT).show();
-                    }
-
-                }catch (Exception e){
-                    if (listener!=null){
-                        listener.onError(e.toString());
-                    }
-                }finally{
-                    if (connection!=null){
-                        connection.disconnect();
-                    }
-                }
-            }
-        }).start();
-    }
 
     public static StringBuffer getRequestData(Map<String,String> params,String encode){
         StringBuffer stringBuffer = new StringBuffer();

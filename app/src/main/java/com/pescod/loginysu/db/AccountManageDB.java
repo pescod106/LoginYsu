@@ -47,6 +47,10 @@ public class AccountManageDB {
         }
     }
 
+    /**
+     * 加载所有账号
+     * @return 账号List
+     */
     public List<AccountInfo> loadAccountInfo(){
         List<AccountInfo> list = new ArrayList<AccountInfo>();
         Cursor cursor = db.query("AccountTable",new String[]{"account","password","isTest","isAvailable"},null,null,"account",null,null);
@@ -61,6 +65,11 @@ public class AccountManageDB {
             }while(cursor.moveToNext());
         }
         return list;
+    }
+
+    public void deleteAccount(String account){
+        String delete = "DELETE FROM AccountTable WHERE account = "+account;
+        db.execSQL(delete);
     }
 
     /**

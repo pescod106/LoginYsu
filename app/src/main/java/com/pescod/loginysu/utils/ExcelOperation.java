@@ -38,7 +38,7 @@ public class ExcelOperation {
             @Override
             public void run() {
                 try{
-                    Log.d("ExcelOperation","------------error-------------");
+                    //Log.d("ExcelOperation","------------error-------------");
                     InputStream inputStream = new FileInputStream(path);
                     Workbook workbook = Workbook.getWorkbook(inputStream);
                     Sheet sheet = workbook.getSheet(0);

@@ -46,10 +46,13 @@ public class MainActivity extends BaseActivity {
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         Log.d("MainActivity","-------onActivityResult--------");
         //super.onActivityResult(requestCode, resultCode, data);
-        Bundle options = data.getExtras();
-        accountEdit.setText(options.getString("account",""));
-        passwordEdit.setText(options.getString("password", ""));
-        Log.d("MainActivity","-------onActivityResult--------");
+        if (resultCode==1){
+            Bundle options = data.getExtras();
+            accountEdit.setText(options.getString("account",""));
+            passwordEdit.setText(options.getString("password", ""));
+            Log.d("MainActivity","-------onActivityResult--------");
+        }
+
     }
 
     @Override

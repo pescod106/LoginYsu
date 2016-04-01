@@ -2,10 +2,14 @@ package com.pescod.loginysu.activity;
 
 import android.accounts.Account;
 import android.app.AlertDialog;
+import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
@@ -17,9 +21,13 @@ import com.pescod.loginysu.R;
 import com.pescod.loginysu.db.AccountManageDB;
 import com.pescod.loginysu.model.AccountInfo;
 import com.pescod.loginysu.utils.AccountAdapter;
+import com.pescod.loginysu.utils.CallbackBundle;
 import com.pescod.loginysu.utils.ExcelOperation;
 import com.pescod.loginysu.utils.HttpCallbackListener;
+import com.pescod.loginysu.utils.HttpUtil;
+import com.pescod.loginysu.utils.OpenFileDialog;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -29,15 +37,35 @@ import java.util.Map;
  */
 public class AccountManageActivity extends BaseActivity {
 
+    private static final int UPDATE_LISTVIEW = 1;
+
     private ListView listView;
     private CheckBox checkBox;
     private List<AccountInfo> listAccount;
     private AccountManageDB accountManageDB;
-    private AccountManageDB manageDB;
     private ExcelOperation excelOperation;
     private ProgressDialog progressDialog;
 
+    private int openFileDialog = 0;
+
     private boolean isEdit = false;//是否已经点击编辑按钮
+
+    private Handler handler = new Handler(){
+        public void handleMessage(Message msg){
+            switch (msg.what){
+                case UPDATE_LISTVIEW:
+                    listAccount.clear();
+                    listAccount = accountManageDB.loadAccountInfo();
+                    AccountAdapter accountAdapter = new AccountAdapter(
+                            AccountManageActivity.this,R.layout.account_list,listAccount);
+                    listView = (ListView)findViewById(R.id.account_list);
+//                    listView.removeAllViews();
+                    listView.setAdapter(accountAdapter);
+                    break;
+            }
+        }
+    };
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -45,15 +73,16 @@ public class AccountManageActivity extends BaseActivity {
 
         checkBox = (CheckBox)findViewById(R.id.checkbox);
 
-        manageDB = AccountManageDB.getInstance(AccountManageActivity.this);
         accountManageDB = AccountManageDB.getInstance(AccountManageActivity.this);
         //excelOperation = ExcelOperation.getInstance();
 
         listAccount = accountManageDB.loadAccountInfo();
+//        if (listAccount.size()>0){
         AccountAdapter accountAdapter = new AccountAdapter(
                 AccountManageActivity.this,R.layout.account_list,listAccount);
         listView = (ListView)findViewById(R.id.account_list);
         listView.setAdapter(accountAdapter);
+//        }
 
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
@@ -66,9 +95,10 @@ public class AccountManageActivity extends BaseActivity {
                 Log.d("AccountManageActivity", accountInfo.getStrAccount() + " " +
                         accountInfo.getStrPassword());
                 intent.putExtras(bundle);
-                AccountManageActivity.this.setResult(0, intent);
-                AccountManageActivity.this.finish();
 //                startActivityForResult(intent, 1);
+                AccountManageActivity.this.setResult(1, intent);
+                AccountManageActivity.this.finish();
+//
             }
         });
 
@@ -78,6 +108,29 @@ public class AccountManageActivity extends BaseActivity {
                 return false;
             }
         });
+    }
+
+    @Override
+    protected Dialog onCreateDialog(int id) {
+        if (id==openFileDialog){
+            Map<String, Integer> images = new HashMap<String, Integer>();
+            // 下面几句设置各文件类型的图标， 需要你先把图标添加到资源文件夹
+            images.put(OpenFileDialog.sRoot, R.drawable.filedialog_root);   // 根目录图标
+            images.put(OpenFileDialog.sParent, R.drawable.filedialog_folder_up);    //返回上一层的图标
+            images.put(OpenFileDialog.sFolder, R.drawable.filedialog_folder);   //文件夹图标
+            images.put("wav", R.drawable.filedialog_wavfile);   //wav文件图标
+            images.put(OpenFileDialog.sEmpty, R.drawable.filedialog_root);
+            Dialog dialog = OpenFileDialog.createDialog(id, this, "打开文件", new CallbackBundle() {
+                        @Override
+                        public void callback(Bundle bundle) {
+                            String filepath = bundle.getString("path");
+                            setTitle(filepath); // 把文件路径显示在标题上
+                        }
+                    },
+                    ".wav;",
+                    images);
+        }
+        return null;
     }
 
     public void add_account_onClick(View view){
@@ -90,21 +143,22 @@ public class AccountManageActivity extends BaseActivity {
                 if (which == 0) {
                     Toast.makeText(AccountManageActivity.this, "111111", Toast.LENGTH_SHORT).show();
                 } else {
+                    //showDialog(openFileDialog);
                     showProgressDialog("正在读取Excel文件...");
                     ExcelOperation.readExcel("/sdcard/Documents/T_4G.xls", new HttpCallbackListener() {
                         @Override
                         public void onFinish(String response) {
-                            closeProgressDialog();
+//                            closeProgressDialog();
+                            Log.d("onFinish",response);
                             List<AccountInfo> list = ExcelOperation.accountInfoList;
+//                            showProgressDialog("正在将账号保存到本地数据库...");
                             for (AccountInfo accountInfo : list) {
-                                manageDB.saveAccount(accountInfo);
+                                if (!(accountInfo.getStrAccount().contains("S")||
+                                        accountInfo.getStrAccount().contains("s")))
+                                    accountManageDB.saveAccount(accountInfo);
                             }
-                            listAccount.clear();
-                            listAccount = accountManageDB.loadAccountInfo();
-                            AccountAdapter accountAdapter = new AccountAdapter(
-                                    AccountManageActivity.this,R.layout.account_list,listAccount);
-                            listView = (ListView)findViewById(R.id.account_list);
-                            listView.setAdapter(accountAdapter);
+                            closeProgressDialog();
+                            finish();
                         }
 
                         @Override
@@ -115,8 +169,7 @@ public class AccountManageActivity extends BaseActivity {
 
                 }
             }
-        });
-        builder.show();
+        }).show();
     }
 
     /**
@@ -164,15 +217,42 @@ public class AccountManageActivity extends BaseActivity {
         builder.setPositiveButton("确定", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-                String account;
-                String password;
-                final String MKKey = "";
+//                final List<AccountInfo> listAccountResult = new ArrayList<AccountInfo>();
+                final AccountInfo accountInfo = new AccountInfo();
                 final String address = "http://202.206.240.243/";
-                Map<String,String> params = new HashMap<String, String>();
                 showProgressDialog("正在测试，请稍侯...");
+                int i;
+                for ( i=0;i<listAccount.size();i++){
+                    final Map<String,String> params = new HashMap<String, String>();
+                    String account = listAccount.get(i).getStrAccount();
+                    String password = listAccount.get(i).getStrPassword();
+                    params.put("DDDDD",account);
+                    params.put("upass",password);
+                    params.put("0MKKey", "");
+                    HttpUtil.sendLoginHttpRequest(params, "utf-8", address, new HttpCallbackListener() {
+                        @Override
+                        public void onFinish(String response) {
 
+                        }
+
+                        @Override
+                        public void onError(String e) {
+                            if ("".equals(e)){
+                                accountManageDB.deleteAccount(params.get("DDDDD"));
+//                            accountInfo.setStrPassword(params.get("upass"));
+                                Log.d("deleteAccount",params.get("DDDDD"));
+                            }
+//                            listAccountResult.add(accountInfo);
+                        }
+                    });
+                }
+                closeProgressDialog();
+//                Log.d("结果长度",String.valueOf(listAccountResult.size()));
+//                for (i=0;i<listAccountResult.size();i++){
+//
+////                    accountManageDB.deleteAccount(listAccountResult.get(i).getStrAccount());
+//                }
             }
-        });
-        builder.show();
+        }).show();
     }
 }

@@ -40,7 +40,6 @@ public class AccountManageActivity extends BaseActivity {
     private static final int UPDATE_LISTVIEW = 1;
 
     private ListView listView;
-    private CheckBox checkBox;
     private List<AccountInfo> listAccount;
     private AccountManageDB accountManageDB;
     private ExcelOperation excelOperation;
@@ -71,7 +70,6 @@ public class AccountManageActivity extends BaseActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.account_manage);
 
-        checkBox = (CheckBox)findViewById(R.id.checkbox);
 
         accountManageDB = AccountManageDB.getInstance(AccountManageActivity.this);
         //excelOperation = ExcelOperation.getInstance();
@@ -172,6 +170,8 @@ public class AccountManageActivity extends BaseActivity {
         }).show();
     }
 
+
+
     /**
      * 显示进度条对话框
      * @param content 对话框的内容
@@ -194,20 +194,56 @@ public class AccountManageActivity extends BaseActivity {
         }
     }
 
-    public void edit_onClick(View view){
-        if (!isEdit){
-            for(int i = 0; i < listView.getChildCount(); i++){
-                View view1 = listView.getChildAt(i);
-                CheckBox cb = (CheckBox)view1.findViewById(R.id.checkbox);
-                cb.setCursorVisible(true);
+    public void export_onClick(View view){
+        listAccount = accountManageDB.loadAccountInfo();
+        ExcelOperation.writeExcel(listAccount,"/sdcard/Documents/4G.xls");
+//        new Thread(new Runnable() {
+//            @Override
+//            public void run() {
+//
+//            }
+//        }).start();
+    }
+
+    public void test_all_account(){
+        final String address = "http://202.206.240.243/";
+//                showProgressDialog("正在测试，请稍侯...");
+        //int i;
+        Log.d("账号个数:",String.valueOf(listAccount.size()));
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                for (int i=0;i<listAccount.size();i++){
+                    final Map<String,String> params = new HashMap<String, String>();
+                    String account = listAccount.get(i).getStrAccount();
+                    String password = listAccount.get(i).getStrPassword();
+                    params.put("DDDDD",account);
+                    params.put("upass",password);
+                    params.put("0MKKey", "");
+                    HttpUtil.sendLoginHttpRequest(params, "utf-8", address, new HttpCallbackListener() {
+                        @Override
+                        public void onFinish(String response) {
+                            Log.d("onFinish",response);
+                        }
+
+                        @Override
+                        public void onError(String e) {
+                            if ("".equals(e)){
+                                accountManageDB.deleteAccount(params.get("DDDDD"));
+                                Log.d("deleteAccount",params.get("DDDDD"));
+                            }
+                        }
+                    });
+                    try{
+                        Thread.sleep(1000);
+                    }catch (Exception e){
+                        e.printStackTrace();
+                    }
+
+                }
             }
-        }else{
-            for(int i = 0; i < listView.getChildCount(); i++){
-                View view1 = listView.getChildAt(i);
-                CheckBox cb = (CheckBox)view1.findViewById(R.id.checkbox);
-                cb.setCursorVisible(false);
-            }
-        }
+        }).start();
+
     }
 
     public void test_all_account_onClick(View view){
@@ -218,40 +254,7 @@ public class AccountManageActivity extends BaseActivity {
             @Override
             public void onClick(DialogInterface dialog, int which) {
 //                final List<AccountInfo> listAccountResult = new ArrayList<AccountInfo>();
-                final AccountInfo accountInfo = new AccountInfo();
-                final String address = "http://202.206.240.243/";
-                showProgressDialog("正在测试，请稍侯...");
-                int i;
-                for ( i=0;i<listAccount.size();i++){
-                    final Map<String,String> params = new HashMap<String, String>();
-                    String account = listAccount.get(i).getStrAccount();
-                    String password = listAccount.get(i).getStrPassword();
-                    params.put("DDDDD",account);
-                    params.put("upass",password);
-                    params.put("0MKKey", "");
-                    HttpUtil.sendLoginHttpRequest(params, "utf-8", address, new HttpCallbackListener() {
-                        @Override
-                        public void onFinish(String response) {
-
-                        }
-
-                        @Override
-                        public void onError(String e) {
-                            if ("".equals(e)){
-                                accountManageDB.deleteAccount(params.get("DDDDD"));
-//                            accountInfo.setStrPassword(params.get("upass"));
-                                Log.d("deleteAccount",params.get("DDDDD"));
-                            }
-//                            listAccountResult.add(accountInfo);
-                        }
-                    });
-                }
-                closeProgressDialog();
-//                Log.d("结果长度",String.valueOf(listAccountResult.size()));
-//                for (i=0;i<listAccountResult.size();i++){
-//
-////                    accountManageDB.deleteAccount(listAccountResult.get(i).getStrAccount());
-//                }
+                test_all_account();
             }
         }).show();
     }

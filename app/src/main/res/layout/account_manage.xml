@@ -27,8 +27,7 @@
             android:layout_marginRight="60dp"
             android:background="@drawable/add"/>
         <Button
-            android:onClick="edit_onClick"
-            android:id="@+id/edit_account"
+            android:onClick="export_onClick"
             android:layout_width="35dp"
             android:layout_height="35dp"
             android:layout_marginTop="4dp"

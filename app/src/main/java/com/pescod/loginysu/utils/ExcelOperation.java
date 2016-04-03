@@ -65,21 +65,22 @@ public class ExcelOperation {
         //return accountInfoList;
     }
 
-    public void writeExcel(List<AccountInfo> accountInfoArrayList,
+    public static void writeExcel(List<AccountInfo> accountInfoArrayList,
                             String path){
         try{
             WritableWorkbook book = Workbook.createWorkbook(new
                     File(path));
             WritableSheet writableSheet = book.createSheet("Sheet1",1);
             for (int i=0;i<accountInfoArrayList.size();i++){
-                Label label1 = new Label(i,0,accountInfoArrayList.get(i).getStrAccount());
-                Label label2 = new Label(i,2,accountInfoArrayList.get(i).getStrPassword());
+                Label label1 = new Label(0,i,accountInfoArrayList.get(i).getStrAccount());
+                Label label2 = new Label(1,i,accountInfoArrayList.get(i).getStrPassword());
                 writableSheet.addCell(label1);
                 writableSheet.addCell(label2);
             }
             book.write();
             book.close();
         }catch(Exception e){
+            e.printStackTrace();
             Log.d("ExcelOperation",e.toString());
         }
     }
